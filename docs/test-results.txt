@@ -1,0 +1,63 @@
+Creating test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...
+Found 31 test(s).
+Operations to perform:
+  Synchronize unmigrated apps: rest_framework
+  Apply all migrations: auction, auth, contenttypes, sessions
+Synchronizing apps without migrations:
+  Creating tables...
+    Running deferred SQL...
+Running migrations:
+  Applying contenttypes.0001_initial... OK
+  Applying contenttypes.0002_remove_content_type_name... OK
+  Applying auth.0001_initial... OK
+  Applying auth.0002_alter_permission_name_max_length... OK
+  Applying auth.0003_alter_user_email_max_length... OK
+  Applying auth.0004_alter_user_username_opts... OK
+  Applying auth.0005_alter_user_last_login_null... OK
+  Applying auth.0006_require_contenttypes_0002... OK
+  Applying auth.0007_alter_validators_add_error_messages... OK
+  Applying auth.0008_alter_user_username_max_length... OK
+  Applying auth.0009_alter_user_last_name_max_length... OK
+  Applying auth.0010_alter_group_name_max_length... OK
+  Applying auth.0011_update_proxy_permissions... OK
+  Applying auth.0012_alter_user_first_name_max_length... OK
+  Applying auction.0001_initial... OK
+  Applying sessions.0001_initial...test_above_budget (auction.tests.AuctionTests.test_above_budget) ... ok
+test_anonymous_denied (auction.tests.AuctionTests.test_anonymous_denied) ... ok
+test_bid_api_replay (auction.tests.AuctionTests.test_bid_api_replay) ... ok
+test_bid_api_validation (auction.tests.AuctionTests.test_bid_api_validation) ... ok
+test_bid_privacy_including_owner (auction.tests.AuctionTests.test_bid_privacy_including_owner) ... ok
+test_block_after_bid_pauses (auction.tests.AuctionTests.test_block_after_bid_pauses) ... ok
+test_blocked_user (auction.tests.AuctionTests.test_blocked_user) ... ok
+test_budget_boundary (auction.tests.AuctionTests.test_budget_boundary) ... ok
+test_csrf_login_required (auction.tests.AuctionTests.test_csrf_login_required) ... ok
+test_early_close_no_effect (auction.tests.AuctionTests.test_early_close_no_effect) ... ok
+test_edit_private_or_missing_returns_404 (auction.tests.AuctionTests.test_edit_private_or_missing_returns_404) ... ok
+test_frozen_and_foreign_edit (auction.tests.AuctionTests.test_frozen_and_foreign_edit) ... ok
+test_invalid_dates (auction.tests.AuctionTests.test_invalid_dates) ... ok
+test_key_body_conflict (auction.tests.AuctionTests.test_key_body_conflict) ... ok
+test_late_bid (auction.tests.AuctionTests.test_late_bid) ... ok
+test_logout_revokes_session (auction.tests.AuctionTests.test_logout_revokes_session) ... ok
+test_moderation (auction.tests.AuctionTests.test_moderation) ... ok
+test_no_bids (auction.tests.AuctionTests.test_no_bids) ... ok
+test_owner_cannot_bid (auction.tests.AuctionTests.test_owner_cannot_bid) ... ok
+test_private_draft_hidden (auction.tests.AuctionTests.test_private_draft_hidden) ... ok
+test_rejected_can_be_edited_and_resubmitted (auction.tests.AuctionTests.test_rejected_can_be_edited_and_resubmitted) ... ok
+test_repeat_bid_returns_original_even_after_close (auction.tests.AuctionTests.test_repeat_bid_returns_original_even_after_close) ... ok
+test_repeat_close (auction.tests.AuctionTests.test_repeat_close) ... ok
+test_second_bid_not_allowed (auction.tests.AuctionTests.test_second_bid_not_allowed) ... ok
+test_second_price (auction.tests.AuctionTests.test_second_price) ... ok
+test_single_bid_pays_budget (auction.tests.AuctionTests.test_single_bid_pays_budget) ... ok
+test_three_bids (auction.tests.AuctionTests.test_three_bids) ... ok
+test_tie_earliest_wins (auction.tests.AuctionTests.test_tie_earliest_wins) ... ok
+test_unverified_denied (auction.tests.AuctionTests.test_unverified_denied) ... ok
+test_concurrent_equal_bids (auction.tests.ConcurrentTests.test_concurrent_equal_bids) ... skipped 'Конкурентные блокировки проверяются только на PostgreSQL'
+test_concurrent_repeat (auction.tests.ConcurrentTests.test_concurrent_repeat) ... skipped 'Конкурентные блокировки проверяются только на PostgreSQL'
+
+----------------------------------------------------------------------
+Ran 31 tests in 14.015s
+
+OK (skipped=2)
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...
+ OK
+System check identified no issues (0 silenced).

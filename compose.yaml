@@ -1,0 +1,43 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?copy .env.example}
+      POSTGRES_USER: ${POSTGRES_USER:?copy .env.example}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?copy .env.example}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  web:
+    build: .
+    environment: &appenv
+      POSTGRES_HOST: db
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY}
+      DEBUG: "1"
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8000:8000"
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000 --noreload"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/auth/csrf/')"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  worker:
+    build: .
+    environment: *appenv
+    depends_on:
+      web:
+        condition: service_healthy
+    command: python manage.py close_auctions --loop
+volumes:
+  pgdata:
