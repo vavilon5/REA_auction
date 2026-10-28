@@ -20,6 +20,12 @@ ALLOWED_HOSTS = os.environ.get(
     "localhost,127.0.0.1,testserver",
 ).split(",")
 
+# Фронтенд на Vite (порт 5173) проксирует /api, Origin браузера остаётся его
+CSRF_TRUSTED_ORIGINS = os.environ.get(
+    "CSRF_TRUSTED_ORIGINS",
+    "http://localhost:5173,http://127.0.0.1:5173",
+).split(",")
+
 INSTALLED_APPS = [
     "django.contrib.auth",
     "django.contrib.contenttypes",
