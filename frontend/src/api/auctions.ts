@@ -10,8 +10,9 @@ import type {
 } from './types';
 
 export async function getCategories(): Promise<Category[]> {
-  const { data } = await client.get<Category[]>('/categories/');
-  return data;
+  // DRF pagination is global, so categories also come as { count, results }
+  const { data } = await client.get<PaginatedResponse<Category>>('/categories/');
+  return data.results;
 }
 
 export async function getAuctions(
