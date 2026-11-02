@@ -18,7 +18,7 @@ from .serializers import (
     DecisionInput,
     AssignmentSerializer,
 )
-from .services import eligible, transition, place_bid, Conflict, event
+from .services import eligible, transition, place_bid, Conflict, event, start_assignment
 
 
 class Admitted(permissions.BasePermission):
@@ -181,3 +181,16 @@ class AssignmentViewSet(viewsets.ReadOnlyModelViewSet):
         return Assignment.objects.filter(
             Q(customer=user) | Q(executor=user)
         ).order_by("-id")
+
+    @action(detail=True, methods=["post"])
+    def start(self, request, pk=None):
+        assignment = self.get_object()
+
+        assignment = start_assignment(
+            assignment.pk,
+            request.user,
+        )
+
+        return Response(
+            self.get_serializer(assignment).data
+        )

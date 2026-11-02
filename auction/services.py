@@ -119,6 +119,38 @@ def close_auction(auction_id):
     return a
 
 
+@transaction.atomic
+def start_assignment(assignment_id, user):
+    assignment = (
+        Assignment.objects
+        .select_for_update()
+        .get(pk=assignment_id)
+    )
+
+    eligible(User.objects.get(pk=user.pk))
+
+    if assignment.executor_id != user.pk:
+        raise PermissionDenied(
+            "Начать работу может только назначенный исполнитель"
+        )
+
+    if assignment.status != Assignment.Status.ASSIGNED:
+        raise Conflict(
+            "Начать можно только работу в статусе assigned"
+        )
+
+    assignment.status = Assignment.Status.IN_PROGRESS
+    assignment.save(update_fields=["status"])
+
+    event(
+        assignment.auction,
+        user,
+        "assignment_started",
+    )
+
+    return assignment
+
+
 def models_invalid_bidder():
     from django.db.models import Q
 

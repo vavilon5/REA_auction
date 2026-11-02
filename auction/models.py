@@ -52,6 +52,18 @@ class Auction(models.Model):
 
 
 class Assignment(models.Model):
+    class Status(models.TextChoices):
+        ASSIGNED = "assigned", "Назначена"
+        IN_PROGRESS = "in_progress", "В работе"
+        ON_REVIEW = "on_review", "На проверке"
+        COMPLETED = "completed", "Завершена"
+
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.ASSIGNED,
+    )
+    
     auction = models.OneToOneField(
         Auction,
         on_delete=models.PROTECT,

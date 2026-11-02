@@ -74,6 +74,7 @@ class AssignmentSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "auction",
+            "status",
             "customer",
             "executor",
             "price_kopecks",
