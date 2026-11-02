@@ -51,6 +51,39 @@ class Auction(models.Model):
         ]
 
 
+class Assignment(models.Model):
+    auction = models.OneToOneField(
+        Auction,
+        on_delete=models.PROTECT,
+        related_name="assignment",
+    )
+    customer = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name="customer_assignments",
+    )
+    executor = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name="executor_assignments",
+    )
+    price_kopecks = models.PositiveBigIntegerField()
+    due_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(price_kopecks__gte=1),
+                name="assignment_price_positive",
+            ),
+            models.CheckConstraint(
+                condition=~Q(customer=models.F("executor")),
+                name="assignment_different_parties",
+            ),
+        ]
+        
+
 class Bid(models.Model):
     auction = models.ForeignKey(Auction, on_delete=models.PROTECT, related_name="bids")
     bidder = models.ForeignKey(User, on_delete=models.PROTECT)

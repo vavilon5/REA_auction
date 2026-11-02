@@ -5,6 +5,7 @@ from rest_framework.routers import DefaultRouter
 
 from auction.views import (
     AuctionViewSet,
+    AssignmentViewSet,
     CategoryViewSet,
     csrf,
     me,
@@ -15,6 +16,7 @@ from auction.views import (
 router = DefaultRouter()
 router.register("auctions", AuctionViewSet, basename="auctions")
 router.register("categories", CategoryViewSet)
+router.register("assignments", AssignmentViewSet, basename="assignments")
 
 urlpatterns = [
     path("api/", include(router.urls)),

@@ -9,13 +9,14 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
-from .models import Auction, Category
+from .models import Auction, Category, Assignment
 from .serializers import (
     AuctionSerializer,
     BidInput,
     BidSerializer,
     CategorySerializer,
     DecisionInput,
+    AssignmentSerializer,
 )
 from .services import eligible, transition, place_bid, Conflict, event
 
@@ -168,3 +169,15 @@ class AuctionViewSet(viewsets.ModelViewSet):
             a.pk, request.user, s.validated_data["amount_kopecks"], key
         )
         return Response(BidSerializer(bid).data, status=201 if created else 200)
+
+
+class AssignmentViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [Admitted]
+    serializer_class = AssignmentSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+
+        return Assignment.objects.filter(
+            Q(customer=user) | Q(executor=user)
+        ).order_by("-id")

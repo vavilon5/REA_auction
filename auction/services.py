@@ -1,7 +1,7 @@
 from django.db import transaction
 from django.utils import timezone
 from rest_framework.exceptions import APIException, PermissionDenied, ValidationError
-from .models import Auction, Bid, Event, User
+from .models import Assignment, Auction, Bid, Event, User
 
 
 class Conflict(APIException):
@@ -105,6 +105,16 @@ def close_auction(auction_id):
             best[1].amount_kopecks if len(best) > 1 else a.budget_kopecks
         )
     a.save(update_fields=["status", "closed_at", "winner", "payment_kopecks"])
+
+    if best:
+        Assignment.objects.create(
+            auction=a,
+            customer_id=a.owner_id,
+            executor_id=a.winner_id,
+            price_kopecks=a.payment_kopecks,
+            due_at=a.due_at,
+        )
+
     event(a, None, "closed")
     return a
 
