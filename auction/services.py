@@ -1,7 +1,8 @@
 from django.db import transaction
+from django.db.models import Max
 from django.utils import timezone
 from rest_framework.exceptions import APIException, PermissionDenied, ValidationError
-from .models import Assignment, Auction, Bid, Event, User
+from .models import Assignment, Auction, Bid, Event, User, Submission
 
 
 class Conflict(APIException):
@@ -149,6 +150,61 @@ def start_assignment(assignment_id, user):
     )
 
     return assignment
+
+
+@transaction.atomic
+def submit_assignment(assignment_id, user, text):
+    assignment = (
+        Assignment.objects
+        .select_for_update()
+        .get(pk=assignment_id)
+    )
+
+    eligible(User.objects.get(pk=user.pk))
+
+    if assignment.executor_id != user.pk:
+        raise PermissionDenied(
+            "Сдать результат может только назначенный исполнитель"
+        )
+
+    if assignment.status != Assignment.Status.IN_PROGRESS:
+        raise Conflict(
+            "Сдать результат можно только из статуса in_progress"
+        )
+
+    text = text.strip()
+
+    if not text:
+        raise ValidationError({
+            "text": "Результат не может быть пустым"
+        })
+
+    if len(text) > 10000:
+        raise ValidationError({
+            "text": "Максимальная длина — 10000 символов"
+        })
+
+    last_version = assignment.submissions.aggregate(
+        value=Max("version")
+    )["value"] or 0
+
+    submission = Submission.objects.create(
+        assignment=assignment,
+        author=user,
+        text=text,
+        version=last_version + 1,
+    )
+
+    assignment.status = Assignment.Status.ON_REVIEW
+    assignment.save(update_fields=["status"])
+
+    event(
+        assignment.auction,
+        user,
+        "result_submitted",
+    )
+
+    return submission
 
 
 def models_invalid_bidder():

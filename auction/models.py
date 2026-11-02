@@ -93,8 +93,37 @@ class Assignment(models.Model):
                 condition=~Q(customer=models.F("executor")),
                 name="assignment_different_parties",
             ),
+        ]   
+
+
+class Submission(models.Model):
+    assignment = models.ForeignKey(
+        Assignment,
+        on_delete=models.PROTECT,
+        related_name="submissions",
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name="submissions",
+    )
+    text = models.TextField(max_length=10000)
+    version = models.PositiveIntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["version"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["assignment", "version"],
+                name="unique_submission_version",
+            ),
+            models.CheckConstraint(
+                condition=Q(version__gte=1),
+                name="submission_version_positive",
+            ),
         ]
-        
+      
 
 class Bid(models.Model):
     auction = models.ForeignKey(Auction, on_delete=models.PROTECT, related_name="bids")

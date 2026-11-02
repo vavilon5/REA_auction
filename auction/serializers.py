@@ -1,6 +1,6 @@
 from django.utils import timezone
 from rest_framework import serializers
-from .models import Auction, Bid, Category, Assignment
+from .models import Auction, Bid, Category, Assignment, Submission
 
 
 class AuctionSerializer(serializers.ModelSerializer):
@@ -67,14 +67,41 @@ class CategorySerializer(serializers.ModelSerializer):
 class DecisionInput(serializers.Serializer):
     reason = serializers.CharField(max_length=2000, allow_blank=False)
     
+
+class SubmissionInput(serializers.Serializer):
+    text = serializers.CharField(
+        max_length=10000,
+        allow_blank=False,
+        trim_whitespace=True,
+    )
+
+
+class SubmissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Submission
+        fields = [
+            "id",
+            "assignment",
+            "author",
+            "text",
+            "version",
+            "created_at",
+        ]
+        read_only_fields = fields
+
     
 class AssignmentSerializer(serializers.ModelSerializer):
+    submissions = SubmissionSerializer(
+        many=True,
+        read_only=True,
+    )
     class Meta:
         model = Assignment
         fields = [
             "id",
             "auction",
             "status",
+            "submissions",
             "customer",
             "executor",
             "price_kopecks",

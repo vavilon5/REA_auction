@@ -17,8 +17,10 @@ from .serializers import (
     CategorySerializer,
     DecisionInput,
     AssignmentSerializer,
+    SubmissionInput,
+    SubmissionSerializer,
 )
-from .services import eligible, transition, place_bid, Conflict, event, start_assignment
+from .services import eligible, transition, place_bid, Conflict, event, start_assignment, submit_assignment
 
 
 class Admitted(permissions.BasePermission):
@@ -193,4 +195,22 @@ class AssignmentViewSet(viewsets.ReadOnlyModelViewSet):
 
         return Response(
             self.get_serializer(assignment).data
+        )
+        
+    @action(detail=True, methods=["post"], serializer_class=SubmissionInput)
+    def submit(self, request, pk=None):
+        assignment = self.get_object()
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        submission = submit_assignment(
+            assignment.pk,
+            request.user,
+            serializer.validated_data["text"],
+        )
+
+        return Response(
+            SubmissionSerializer(submission).data,
+            status=status.HTTP_201_CREATED,
         )
