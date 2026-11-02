@@ -97,6 +97,11 @@ class Assignment(models.Model):
 
 
 class Submission(models.Model):
+    class ReviewStatus(models.TextChoices):
+        PENDING = "pending", "Ожидает проверки"
+        ACCEPTED = "accepted", "Принят"
+        RETURNED = "returned", "Возвращён"
+
     assignment = models.ForeignKey(
         Assignment,
         on_delete=models.PROTECT,
@@ -110,6 +115,26 @@ class Submission(models.Model):
     text = models.TextField(max_length=10000)
     version = models.PositiveIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
+    review_status = models.CharField(
+        max_length=20,
+        choices=ReviewStatus.choices,
+        default=ReviewStatus.PENDING,
+    )
+    review_comment = models.TextField(
+        max_length=2000,
+        blank=True,
+    )
+    reviewed_by = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name="reviewed_submissions",
+        null=True,
+        blank=True,
+    )
+    reviewed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
 
     class Meta:
         ordering = ["version"]

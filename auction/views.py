@@ -19,8 +19,10 @@ from .serializers import (
     AssignmentSerializer,
     SubmissionInput,
     SubmissionSerializer,
+    AcceptInput,
+    ReturnInput,
 )
-from .services import eligible, transition, place_bid, Conflict, event, start_assignment, submit_assignment
+from .services import eligible, transition, place_bid, Conflict, event, start_assignment, submit_assignment, review_assignment
 
 
 class Admitted(permissions.BasePermission):
@@ -213,4 +215,45 @@ class AssignmentViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(
             SubmissionSerializer(submission).data,
             status=status.HTTP_201_CREATED,
+        )
+        
+    @action(detail=True, methods=["post"], serializer_class=AcceptInput)
+    def accept(self, request, pk=None):
+        assignment = self.get_object()
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        assignment = review_assignment(
+            assignment.pk,
+            request.user,
+            decision="accept",
+        )
+
+        return Response(
+            AssignmentSerializer(
+                assignment,
+                context=self.get_serializer_context(),
+            ).data
+        )
+
+    @action(detail=True, methods=["post"], url_path="return", url_name="return", serializer_class=ReturnInput)
+    def return_result(self, request, pk=None):
+        assignment = self.get_object()
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        assignment = review_assignment(
+            assignment.pk,
+            request.user,
+            decision="return",
+            comment=serializer.validated_data["comment"],
+        )
+
+        return Response(
+            AssignmentSerializer(
+                assignment,
+                context=self.get_serializer_context(),
+            ).data
         )

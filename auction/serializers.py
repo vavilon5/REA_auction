@@ -83,6 +83,10 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "id",
             "assignment",
             "author",
+            "review_status",
+            "review_comment",
+            "reviewed_by",
+            "reviewed_at",
             "text",
             "version",
             "created_at",
@@ -109,3 +113,15 @@ class AssignmentSerializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = fields
+
+
+class AcceptInput(serializers.Serializer):
+    pass
+
+
+class ReturnInput(serializers.Serializer):
+    comment = serializers.CharField(
+        max_length=2000,
+        allow_blank=False,
+        trim_whitespace=True,
+    )

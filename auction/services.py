@@ -207,6 +207,86 @@ def submit_assignment(assignment_id, user, text):
     return submission
 
 
+@transaction.atomic
+def review_assignment(assignment_id, user, decision, comment=""):
+    assignment = (
+        Assignment.objects
+        .select_for_update()
+        .get(pk=assignment_id)
+    )
+    eligible(User.objects.get(pk=user.pk))
+
+    if assignment.customer_id != user.pk:
+        raise PermissionDenied(
+            "Решение может принять только заказчик"
+        )
+
+    if decision not in ("accept", "return"):
+        raise ValidationError("Неизвестное решение")
+
+    if assignment.status != Assignment.Status.ON_REVIEW:
+        raise Conflict(
+            "Проверить можно только работу в статусе on_review"
+        )
+
+    comment = comment.strip()
+
+    if decision == "return" and not comment:
+        raise ValidationError({
+            "comment": "Укажите причину возврата"
+        })
+
+    if len(comment) > 2000:
+        raise ValidationError({
+            "comment": "Максимальная длина — 2000 символов"
+        })
+
+    submission = (
+        assignment.submissions
+        .order_by("-version")
+        .first()
+    )
+
+    if submission is None:
+        raise Conflict("Нет результата для проверки")
+
+    if submission.review_status != Submission.ReviewStatus.PENDING:
+        raise Conflict("Эта версия уже проверена")
+
+    if decision == "accept":
+        submission.review_status = Submission.ReviewStatus.ACCEPTED
+        assignment.status = Assignment.Status.COMPLETED
+        action_name = "result_accepted"
+    else:
+        submission.review_status = Submission.ReviewStatus.RETURNED
+        assignment.status = Assignment.Status.IN_PROGRESS
+        action_name = "result_returned"
+
+    submission.review_comment = comment
+    submission.reviewed_by = user
+    submission.reviewed_at = timezone.now()
+
+    submission.save(
+        update_fields=[
+            "review_status",
+            "review_comment",
+            "reviewed_by",
+            "reviewed_at",
+        ]
+    )
+
+    assignment.save(update_fields=["status"])
+
+    event(
+        assignment.auction,
+        user,
+        action_name,
+        comment,
+    )
+
+    return assignment
+
+
 def models_invalid_bidder():
     from django.db.models import Q
 
